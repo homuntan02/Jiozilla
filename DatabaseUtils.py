@@ -98,23 +98,20 @@ def jio_id_in_jios(jio_id):
 
 ### Adding Functions ###
 
-def add_user(user_id, org_id):
+def add_user(user_id):
 	con = sqlite3.connect("database.db")
 	cur = con.cursor()
 	add_to_user_table = f"INSERT OR IGNORE INTO users(id) VALUES ('{user_id}');"
-	check_org_table = f"""SELECT EXISTS(SELECT 1 FROM organisation WHERE id={org_id});""" 
+	cur.execute(add_to_user_table)
+	con.commit()
+	con.close()
+
+def add_user_from_org(user_id, org_id):
+	con = sqlite3.connect("database.db")
+	cur = con.cursor()
 	add_to_orgRltn_table = f"""INSERT OR IGNORE INTO orgToUser(user_id, org_id) VALUES ('{user_id}', {org_id});"""
-	cur.execute(check_org_table)
-	result = cur.fetchone()
-
-	if result:
-		cur.execute(add_to_user_table)
-		cur.execute(add_to_orgRltn_table)
-		con.commit()
-	else:
-		# do something if organisation does not exist
-		print(f"{org_id} does not exist")
-
+	cur.execute(add_to_orgRltn_table)
+	con.commit()
 	con.close()
 
 def all_users_from(org_id):
