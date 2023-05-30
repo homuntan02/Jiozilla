@@ -15,7 +15,7 @@ async def send_welcome(msg):
 
 @bot.message_handler(commands='start')
 async def start(msg):
-  currUserId = bot._user.id
+  currUserId = msg.chat.id
   if not DatabaseUtils.user_in_users(currUserId) :
      DatabaseUtils.add_user(currUserId)
 
@@ -33,7 +33,7 @@ async def addOrg(msg):
 
   #Reply
   await bot.reply_to(msg,"Success!! Your Organisation id is:" + str(orgId) + '\n' +
-                    "Get your colleagues to use the /join " + str(orgId) + " to join your organisation")
+                    "Get your colleagues to use '/join " + str(orgId) + "' to join your organisation")
 
 @bot.message_handler(commands =['join'])
 async def joinOrg(msg):
@@ -43,10 +43,30 @@ async def joinOrg(msg):
       await bot.reply_to(msg, "Couldn't find organisation")
     
     currUserId = bot._user.id
-    orgName = DatabaseUtils.add_user_from_org(currUserId, orgId)[0]
+    orgName = str(DatabaseUtils.add_user_from_org(currUserId, orgId)[1])
       #Reply
-    await bot.reply_to(msg,"Success!! You are now a part of " + orgName + '\n' +
-                  "Get your other colleagues to use the /join " + orgName + " to join your organisation")
+    await bot.reply_to(msg,"SIUUUU!! You are now a part of '" + orgName + "'\n" +
+                  "Get your other colleagues to use '/join " + orgId + "' to join your organisation")
+    
+@bot.message_handler(commands = ['jio'])
+async def jio(msg):
+  splitMsg = msg.text.split(" ", 2)
+  orgName = splitMsg[1]
+  orgId = int(hashlib.sha1(orgName.encode("utf-8")).hexdigest(), 16) % (10 ** 8)
+  jioMsg = splitMsg[2]
+
+  users = DatabaseUtils.all_users_from(orgId)
+
+  if(users == None):
+    await bot.reply_to(msg, jioMsg + users)
+  else:
+    for user in users:
+      await bot.send_message(user, jioMsg)
+    
+    await bot.reply_to(msg, "All jios sent out!! have fun :DDD")
+
+
+
 # @bot.message_handler(commands = "showOrgs")
 # async def showOrgs(msg):
 #   DatabaseUtils.list_all_org_to_user()

@@ -131,9 +131,11 @@ def all_users_from(org_id):
 
 	if result:
 		table = [res[0] for res in result]
-		print(table)
+		 
 	else:
 		print(f"{org_id} does not exist")
+	
+	return table
 
 	con.close()
 
