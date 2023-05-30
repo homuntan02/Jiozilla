@@ -124,7 +124,7 @@ def all_users_from(org_id):
 	con = sqlite3.connect("database.db")
 	cur = con.cursor()
 
-	all_user_sql = f"SELECT user_id FROM orgToUser where org_id={org_id};"		
+	all_user_sql = f"SELECT user_id FROM orgToUser where org_id='{org_id}';"		
 	
 	cur.execute(all_user_sql)
 	result = cur.fetchall()
@@ -135,7 +135,7 @@ def all_users_from(org_id):
 	else:
 		print(f"{org_id} does not exist")
 	
-	return table
+	return result
 
 	con.close()
 

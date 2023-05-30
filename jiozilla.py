@@ -8,6 +8,9 @@ global TOKEN
 TOKEN = bot_token
 
 bot = AsyncTeleBot(TOKEN)
+@bot.message_handler(commands = ['setup'])
+async def setup(msg):
+  DatabaseUtils.setup();
 
 @bot.message_handler(commands=['help'])
 async def send_welcome(msg):
@@ -15,7 +18,7 @@ async def send_welcome(msg):
 
 @bot.message_handler(commands='start')
 async def start(msg):
-  currUserId = msg.chat.id
+  currUserId = msg.from_user.id
   if not DatabaseUtils.user_in_users(currUserId) :
      DatabaseUtils.add_user(currUserId)
 
@@ -55,11 +58,10 @@ async def jio(msg):
   orgId = int(hashlib.sha1(orgName.encode("utf-8")).hexdigest(), 16) % (10 ** 8)
   jioMsg = splitMsg[2]
 
-  users = DatabaseUtils.all_users_from(orgId)
-
-  if(users == None):
-    await bot.reply_to(msg, jioMsg + users)
+  if(not DatabaseUtils.org_name_in_organisations(orgName)):
+    await bot.reply_to(msg, "noone to jio :<")
   else:
+    users = DatabaseUtils.all_users_from(orgId)
     for user in users:
       await bot.send_message(user, jioMsg)
     
@@ -67,9 +69,6 @@ async def jio(msg):
 
 
 
-# @bot.message_handler(commands = "showOrgs")
-# async def showOrgs(msg):
-#   DatabaseUtils.list_all_org_to_user()
 
 @bot.message_handler(func=lambda message: True)
 async def echo_msg(msg):
