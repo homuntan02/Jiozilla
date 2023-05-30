@@ -1,6 +1,7 @@
 from telebot.async_telebot import AsyncTeleBot
 from jiozillaBot.credentials import bot_token, bot_user_name
 import DatabaseUtils;
+import hashlib
 
 global bot
 global TOKEN
@@ -25,15 +26,28 @@ async def start(msg):
 @bot.message_handler(commands = ['addOrg'])
 async def addOrg(msg):
   orgName = msg.text.split(" ")[1]
-  orgid = 0
+  orgId = int(hashlib.sha1(orgName.encode("utf-8")).hexdigest(), 16) % (10 ** 8)
 
-  if not DatabaseUtils.org_name_in_organisations(orgName):
-    orgid += DatabaseUtils.add_org(orgName)
+  if not DatabaseUtils.org_id_in_organisations(orgId):
+    DatabaseUtils.add_org(orgName)   
 
   #Reply
-  await bot.reply_to(msg,"Success!! Your Organisation id is:" + str(orgid) + '\n' +
-                     "Get your colleagues to use the /join " + str(orgid) + " to join your organisation")
+  await bot.reply_to(msg,"Success!! Your Organisation id is:" + str(orgId) + '\n' +
+                    "Get your colleagues to use the /join " + str(orgId) + " to join your organisation")
 
+@bot.message_handler(commands =['join'])
+async def joinOrg(msg):
+    orgName = msg.text.split(" ")[1]
+    orgId = int(hashlib.sha1(orgName.encode("utf-8")).hexdigest(), 16) % (10 ** 8)
+
+    if not DatabaseUtils.org_id_in_organisations(orgId):
+      await bot.reply_to(msg, "Couldn't find organisation")
+    else: 
+      currUserId = bot._user.id
+      orgName = DatabaseUtils.add_user_from_org(currUserId, orgId)
+      #Reply
+      await bot.reply_to(msg,"Success!! You are now a part of" + orgName + '\n' +
+                    "Get your other colleagues to use the /join " + orgName + " to join your organisation")
 # @bot.message_handler(commands = "showOrgs")
 # async def showOrgs(msg):
 #   DatabaseUtils.list_all_org_to_user()

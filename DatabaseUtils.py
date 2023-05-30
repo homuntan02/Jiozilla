@@ -73,11 +73,10 @@ def user_in_users(user_id):
 	con.close()
 	return len(result) != 0
 
-def org_name_in_organisations(org_name):
-	org_id = int(hashlib.sha1(org_name.encode("utf-8")).hexdigest(), 16) % (10 ** 8)
+def org_id_in_organisations(org_id):
 	con = sqlite3.connect("database.db")
 	cur = con.cursor()
-	cur.execute(f"SELECT * FROM organisation WHERE id={org_id}")
+	cur.execute(f"SELECT * FROM organisation WHERE id= '{org_id}'")
 	result = cur.fetchall()
 	con.close()
 	return len(result) != 0
@@ -93,7 +92,7 @@ def org_name_in_organisations(org_name):
 def jio_id_in_jios(jio_id):
 	con = sqlite3.connect("database.db")
 	cur = con.cursor()
-	cur.execute(f"SELECT * FROM jio WHERE id={jio_id};")
+	cur.execute(f"SELECT * FROM jio WHERE id='{jio_id}';")
 	result = cur.fetchall()
 	con.close()
 	return len(result) != 0
@@ -113,8 +112,13 @@ def add_user_from_org(user_id, org_id):
 	cur = con.cursor()
 	add_to_orgRltn_table = f"""INSERT OR IGNORE INTO orgToUser(user_id, org_id) VALUES ('{user_id}', {org_id});"""
 	cur.execute(add_to_orgRltn_table)
+
+	cur.execute(f"SELECT * FROM organisation WHERE id= '{org_id}'")
+	result = cur.fetchall()
 	con.commit()
 	con.close()
+
+	return result[0]
 
 def all_users_from(org_id):
 	con = sqlite3.connect("database.db")
@@ -138,7 +142,7 @@ def add_org(org_name):
 	cur = con.cursor()
 
 	org_id = int(hashlib.sha1(org_name.encode("utf-8")).hexdigest(), 16) % (10 ** 8)
-	org_sql = f"INSERT OR IGNORE INTO organisation(id, name) VALUES ({org_id}, {org_name});"
+	org_sql = f"INSERT OR IGNORE INTO organisation(id, name) VALUES ('{org_id}', '{org_name}');"
 	cur.execute(org_sql)
 	con.commit()
 	con.close()
