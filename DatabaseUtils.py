@@ -1,4 +1,5 @@
 import sqlite3
+import hashlib
 
 con = sqlite3.connect("database.db")
 cur = con.cursor()
@@ -72,7 +73,8 @@ def user_in_users(user_id):
 	con.close()
 	return len(result) != 0
 
-def org_id_in_organisations(org_id):
+def org_name_in_organisations(org_name):
+	org_id = int(hashlib.sha1(org_name.encode("utf-8")).hexdigest(), 16) % (10 ** 8)
 	con = sqlite3.connect("database.db")
 	cur = con.cursor()
 	cur.execute(f"SELECT * FROM organisation WHERE id={org_id}")
@@ -131,13 +133,17 @@ def all_users_from(org_id):
 
 	con.close()
 
-def add_org(org_id, org_name):
+def add_org(org_name):
 	con = sqlite3.connect("database.db")
 	cur = con.cursor()
+
+	org_id = int(hashlib.sha1(org_name.encode("utf-8")).hexdigest(), 16) % (10 ** 8)
 	org_sql = f"INSERT OR IGNORE INTO organisation(id, name) VALUES ({org_id}, {org_name});"
 	cur.execute(org_sql)
 	con.commit()
 	con.close()
+
+	return org_id
 
 def update_org_name(org_id, org_name):
 	con = sqlite3.connect("database.db")
@@ -152,10 +158,11 @@ def update_org_name(org_id, org_name):
 	con.commit()
 	con.close()
 
-def add_jio(jio_id, date, start_t, end_t, location, org_id):
+def add_jio(jio_id, date, start_t, end_t, location, org_name):
 	con = sqlite3.connect("database.db")
 	cur = con.cursor()
 
+	org_id = int(hashlib.sha1(org_name.encode("utf-8")).hexdigest(), 16) % (10 ** 8)
 	cur.execute(f"""
 
 	INSERT OR IGNORE INTO jio(id, date, start_t, end_t, location, org_id)
